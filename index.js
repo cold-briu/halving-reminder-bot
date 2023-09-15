@@ -25,39 +25,54 @@ console.log("Bot started")
 
 
 bot.command('start', ctx => {
+
     fslog(({
         command: 'start',
-        update: ctx.update,
-        telegram: ctx.telegram,
+        chat: ctx.chat,
+        from: ctx.from,
     }))
-    const topic_id = ctx.message.is_topic_message ? ctx.message.message_thread_id : undefined;
+
     bot.telegram.sendMessage(ctx.chat.id, `Hello there ${ctx.from.first_name}! Welcome to halving reminder 😎. Este bot es exclusivo de cypherplatxs, parcerxs. Type /reminder to get the date.`, {
-        message_thread_id: 4707
+        message_thread_id: getThread(ctx.chat.is_forum)
     })
 })
 
 
 bot.command('reminder', ctx => {
+
     fslog(({
-        command: 'reminder',
-        update: ctx.update,
-        telegram: ctx.telegram,
+        command: 'start',
+        chat: ctx.chat,
+        from: ctx.from,
     }))
 
     axios.get('https://blockchain.info/q/getblockcount')
         .then(response => {
             let halvingDate = getHalvingDate(response.data)
-            const topic_id = ctx.message.is_topic_message ? ctx.message.message_thread_id : undefined;
+
             bot.telegram.sendMessage(ctx.chat.id,
-                `Next halving is happening on ${halvingDate.halvingDate} time left is ${halvingDate.remainingDays} days, ${halvingDate.remainingHours} hours, ${halvingDate.remainingMinutes} minutes and ${halvingDate.remainingSeconds} seconds.`,
+                `
+📆 Next halving is happening on 
+    🏄‍♀️ ${halvingDate.halvingDate}.
+
+🕒 Time left:
+    🐶 ${halvingDate.remainingDays} days,
+    🐱 ${halvingDate.remainingHours} hours,
+    🐭 ${halvingDate.remainingMinutes} minutes,
+    🐰 ${halvingDate.remainingSeconds} seconds.
+    
+🎁 Current block height is ${response.data}
+    ⏳ ${halvingDate.blocksRemaining} blocks left.
+`,
                 {
-                    message_thread_id: 4707
+                    message_thread_id: getThread(ctx.chat.is_forum)
                 })
         })
 })
 
-function get_forum(params) {
-
+function getThread(is_topic_message) {
+    // return is_topic_message ? ctx.message.message_thread_id : undefined;
+    return is_topic_message ? 4707 : undefined;
 }
 
 function fslog(entry) {
@@ -110,13 +125,25 @@ function getHalvingDate(blockHeight) {
     const remainingHours = Math.floor((minutesLeft % (60 * 24)) / 60);
     const remainingMinutes = Math.floor(minutesLeft % 60);
 
+    const formattedDate = halvingDate.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        timeZoneName: "short",
+    });
+
+
     // Construct the result object
     const result = {
-        halvingDate,
+        halvingDate: formattedDate,
         remainingDays,
         remainingHours,
         remainingMinutes,
         remainingSeconds: Math.floor((minutesLeft * 60) % 60),
+        blocksRemaining
     };
 
     return result;
