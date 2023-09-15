@@ -70,6 +70,18 @@ bot.command('reminder', ctx => {
         })
 })
 
+bot.command('meme', ctx => {
+
+    fslog(({
+        command: 'meme',
+        chat: ctx.chat,
+        from: ctx.from,
+    }))
+
+    bot.telegram.sendPhoto(ctx.chat.id, 'https://i.redd.it/mmoqf03eq1hb1.jpg', { message_thread_id: getThread(ctx.chat.is_forum) })
+})
+
+
 function getThread(is_topic_message) {
     // return is_topic_message ? ctx.message.message_thread_id : undefined;
     return is_topic_message ? 4707 : undefined;
