@@ -78,7 +78,16 @@ bot.command('meme', ctx => {
         from: ctx.from,
     }))
 
-    bot.telegram.sendPhoto(ctx.chat.id, 'https://i.redd.it/mmoqf03eq1hb1.jpg', { message_thread_id: getThread(ctx.chat.is_forum) })
+
+    const apiUrl = `https://api.giphy.com/v1/gifs/random?tag=bitcoin-halving&api_key=${process.env.IMG_TOKEN}`;
+
+    axios.get(apiUrl)
+        .then((response) => {
+            const url = response.data.data.images.downsized.url
+            bot.telegram.sendAnimation(ctx.chat.id, url, { message_thread_id: getThread(ctx.chat.is_forum) })
+        })
+
+
 })
 
 
